@@ -60,7 +60,8 @@ def make_book(base_url, auth_headers):
     def _make(**overrides):
         r = requests.post(f"{base_url}/v1/books", json=book_data(**overrides),
                           headers=auth_headers, timeout=TIMEOUT)
-        assert r.status_code == 201, f"setup: could not create book: {r.status_code} {r.text}"
+        # Setup only: accept any success code. Checking for exactly 201 is a job for your own tests.
+        assert r.status_code in (200, 201), f"setup: could not create book: {r.status_code} {r.text}"
         book = r.json()
         created.append(book["id"])
         return book

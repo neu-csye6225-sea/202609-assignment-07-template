@@ -314,7 +314,7 @@ This test is in the template as `tests/integration/test_books_example.py`. Some 
 
 Filtering by a unique author keeps a list test's results limited to its own books, even when the server already has others.
 
-Use `make_book` only to **set up** a test. To test `POST /v1/books` itself, including invalid bodies, send the request directly with `book_data()`, as in the examples below. `make_book` expects a `201` and stops the test if creation fails.
+Use `make_book` only to **set up** a test. To test `POST /v1/books` itself, including invalid bodies, send the request directly with `book_data()`, as in the examples below. `make_book` accepts any success status (`200` or `201`) and stops the test if creation fails, so it does **not** check the create status code for you. Write your own test for that.
 
 > **Before your `POST /v1/books` works,** every test that uses `make_book` errors with `setup: could not create book`. That's expected: implement create early, because most of your tests depend on it.
 
@@ -448,7 +448,7 @@ Each Live API group awards partial credit for the share of its checks your serve
 | "These tests fail against a server that follows the spec" | The test, or its assumption about the spec, is wrong. Re-read that part of `docs/api-spec.md`. |
 | `pytest did not finish` | Add `timeout=` to every request. Don't `sleep()` in tests. |
 | A test passes alone but fails in the suite | Tests are sharing data. Create fresh data in each test with `make_book`. |
-| `setup: could not create book` | `make_book` got something other than `201` from `POST /v1/books`. Check your server's create endpoint first. |
+| `setup: could not create book` | `make_book` got an error status from `POST /v1/books`. Check your server's create endpoint first. |
 | `ModuleNotFoundError: No module named 'pytest'` | Your virtual environment isn't active. Run `source venv/bin/activate` (see Appendix B). |
 
 ---
