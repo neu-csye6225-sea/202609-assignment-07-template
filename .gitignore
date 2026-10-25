@@ -1,0 +1,17 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+.pytest_cache/
+
+# Local data and secrets
+*.db
+.env
+
+# Terraform: plugins and backups are ignored, but terraform.tfstate is NOT ignored.
+# The autograder reads terraform/terraform.tfstate, so you must commit it.
+.terraform/
+*.tfstate.backup
+crash.log
+*.tfvars

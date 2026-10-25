@@ -1,0 +1,30 @@
+#!/bin/bash
+# Boot script rendered by Terraform's templatefile(). Runs once, as root, on first boot.
+set -euxo pipefail
+
+useradd --system --no-create-home --shell /usr/sbin/nologin library || true
+mkdir -p /opt/library-api /var/lib/library-api
+
+# server.py arrives gzipped and base64-encoded to stay under the 16 KB user_data limit
+echo '${server_py_b64gz}' | base64 -d | gunzip > /opt/library-api/server.py
+chown -R library:library /var/lib/library-api
+
+cat > /etc/systemd/system/library-api.service <<'UNIT'
+[Unit]
+Description=Library API
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=library
+Environment=PORT=8080
+Environment=DB_PATH=/var/lib/library-api/library.db
+ExecStart=/usr/bin/python3 /opt/library-api/server.py
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+UNIT
+
+systemctl daemon-reload
+systemctl enable --now library-api

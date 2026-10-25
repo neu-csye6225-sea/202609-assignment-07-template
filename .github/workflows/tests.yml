@@ -1,0 +1,43 @@
+# Runs your integration tests against a copy of your server started on the GitHub runner.
+# Optional and not graded: it gives you fast feedback on every push.
+# If you wrote the server in another language, change the "Start the server" step.
+name: integration-tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  integration-tests:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Install test dependencies
+        run: pip install -r requirements-dev.txt
+
+      - name: Start the server
+        run: |
+          PORT=8080 DB_PATH=/tmp/library.db nohup python3 app/server.py > server.log 2>&1 &
+          for i in $(seq 1 30); do
+            curl -sf http://127.0.0.1:8080/healthcheck && exit 0
+            sleep 1
+          done
+          echo "server did not start"; cat server.log; exit 1
+
+      - name: Run integration tests
+        env:
+          BASE_URL: http://127.0.0.1:8080
+          API_USERNAME: grader
+          API_PASSWORD: Library-Fall2026
+        run: python -m pytest tests/integration -v
+
+      - name: Server log
+        if: always()
+        run: cat server.log || true
